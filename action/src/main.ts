@@ -52,6 +52,7 @@ const flaggedList = (flag: string, listArgs: readonly string[]): string[] => {
 const locateQtArchDir = (installDir: string): string => {
   // For 6.4.2/gcc, qmake is at 'installDir/6.4.2/gcc_64/bin/qmake'.
   // This makes a list of all the viable arch directories that contain a qmake file.
+  // For >=6.7.0/gcc, there is a new 'gcc_arm64' directory for ARM64 builds but the glob pattern still works.
   const qtArchDirs = glob
     .sync(`${installDir}/[0-9]*/*/bin/qmake*`)
     .map((s) => s.replace(/\/bin\/qmake[^/]*$/, ""));
@@ -80,7 +81,7 @@ const isAutodesktopSupported = async (): Promise<boolean> => {
 };
 
 class Inputs {
-  readonly host: "windows" | "mac" | "linux";
+  readonly host: "windows" | "mac" | "linux" | "linux_arm64";
   readonly target: "desktop" | "android" | "ios";
   readonly version: string;
   readonly arch: string;
@@ -125,6 +126,15 @@ class Inputs {
           this.host = "mac";
           break;
         }
+        case "linux": {
+          if (os.arch() === "arm64") {
+            this.host = "linux_arm64";
+            break;
+          } else {
+            this.host = "linux";
+            break;
+          }
+        }
         default: {
           this.host = "linux";
           break;
@@ -132,10 +142,12 @@ class Inputs {
       }
     } else {
       // Make sure host is one of the allowed values
-      if (host === "windows" || host === "mac" || host === "linux") {
+      if (host === "windows" || host === "mac" || host === "linux" || host === "linux_arm64") {
         this.host = host;
       } else {
-        throw TypeError(`host: "${host}" is not one of "windows" | "mac" | "linux"`);
+        throw TypeError(
+          `host: "${host}" is not one of "windows" | "mac" | "linux" | "linux_arm64"`
+        );
       }
     }
 
@@ -172,6 +184,18 @@ class Inputs {
         } else {
           this.arch = "win64_msvc2017_64";
         }
+      } else if (this.host === "linux_arm64") {
+        this.arch = "linux_gcc_arm64";
+      }
+    }
+
+    // Ensure required version >=6.7.0 for linux_arm64 host and linux_gcc_arm64 arch
+    if (this.host === "linux_arm64") {
+      const version = core.getInput("version");
+      if (!compareVersions(version, ">=", "6.7.0")) {
+        throw TypeError(
+          `version: "${version}" must be greater than or equal to "6.7.0" for Linux ARM64 builds`
+        );
       }
     }
 

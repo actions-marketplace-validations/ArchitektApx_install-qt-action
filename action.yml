@@ -1,6 +1,6 @@
-name: Install Qt
-description: Install Qt on your Github Actions workflows with just one simple action
-author: jurplel
+name: Install Qt (Linux ARM64 Fork)
+description: Install Qt on your Github Actions workflows with just one simple action (Forked to add Linux ARM64 Support for Qt >=6.7.0 )
+author: ArchitektApx
 branding:
   icon: package
   color: green
@@ -55,7 +55,7 @@ inputs:
     description: Location to source aqtinstall from in case of issues
   aqtversion:
     description: Version of aqtinstall to use in case of issues
-    default: ==3.1.*
+    default: ==3.1.16
   py7zrversion:
     description: Version of py7zr to use in case of issues
     default: ==0.20.*

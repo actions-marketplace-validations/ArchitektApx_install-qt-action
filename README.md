@@ -1,3 +1,9 @@
+## Fork to support linux arm64 with Qt >=6.7.0
+```yml
+    - name: Install Qt
+      uses: ArchitektApx/install-qt-action@v4
+```
+
 # `install-qt-action`
 
 Installing Qt on Github Actions workflows manually is the worst.

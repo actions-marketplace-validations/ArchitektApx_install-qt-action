@@ -1,0 +1,13 @@
+{
+    "files.exclude": {
+        "**/.git": false,
+        "**/.svn": false,
+        "**/.hg": false,
+        "**/CVS": false,
+        "**/.trunk/*actions/": false,
+        "**/.trunk/*logs/": false,
+        "**/.trunk/*notifications/": false,
+        "**/.trunk/*out/": false,
+        "**/.trunk/*plugins/": false
+    }
+}
