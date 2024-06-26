@@ -90,7 +90,13 @@ jobs:
             qt:
               tools-only-build: true
               add-tools-to-path: false
-
+          - os: ubuntu-22.04
+            arm64-install-example: true
+            aqtversion: "==3.1.16"
+            qt:
+              host: linux_arm64
+              modules: qtwebengine
+              arch: linux_gcc_arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -156,7 +162,7 @@ jobs:
         shell: cmd
 
       - name: Configure test project on unix
-        if: ${{ matrix.qt.version && !startsWith(matrix.os, 'windows') }}
+        if: ${{ matrix.qt.version && !startsWith(matrix.os, 'windows') && matrix.qt.arch != 'linux_gcc_arm64'}}
         env:
           QT_VERSION: ${{ matrix.qt.version }}
         run: |
@@ -243,3 +249,23 @@ jobs:
           # Check that qbs (from QtCreator) is not in the path
           ! which qbs
           ! qbs --version
+
+      - name: Install linux arm64 Qt 6.7.0
+        if: ${{ matrix.arm64-install-example && matrix.qt.arch == 'linux_gcc_arm64' }}
+        uses: ./
+        with:
+          version: 6.7.0
+          host: linux_arm64
+          modules: ${{ matrix.qt.modules }}
+          arch: linux_gcc_arm64
+          cache: ${{ matrix.cache == 'cached' }}
+          set-env: true
+
+      - name: Test linux arm64 Qt installation
+        if: ${{ matrix.arm64-install-example && matrix.qt.arch == 'linux_gcc_arm64' }}
+        shell: bash
+        run: |
+          cd ../Qt/6.7.0/gcc_arm64
+          # qmake must be a ARM aaarch64 binary
+          file ./bin/qmake
+          file ./bin/qmake | grep 'ELF 64-bit LSB pie executable, ARM aarch64' || exit 1
